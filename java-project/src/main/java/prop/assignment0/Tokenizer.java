@@ -6,69 +6,115 @@ public class Tokenizer implements ITokenizer {
     private Scanner scanner;
     private Lexeme currentLexeme;
     private Token currentToken;
+    private TokenizerState state;
 
     public Tokenizer() {
         scanner = new Scanner();
         currentLexeme = new Lexeme(null, Token.NULL);
         currentToken = Token.NULL;
+        state = TokenizerState.idle;
     }
 
     @Override
     public void open(String fileName) throws IOException, TokenizerException {
         scanner.open(fileName);
+        scanner.moveNext();
     }
 
     @Override
     public Lexeme current() {
-        return null;
+        return currentLexeme;
     }
 
     @Override
     public void moveNext() throws IOException, TokenizerException {
-        if (scanner.current() != scanner.EOF) {
-            String value = "";
-            do {
-                scanner.moveNext();
-                char c = scanner.current();
-                if (isIdentity(c)) {
-                    currentToken = Token.IDENT;
-                    value += c;
-                    continue;
-                }
+        String value = "";
+        currentToken = Token.NULL;
 
-                if (Character.isDigit(c)) {
-                    currentToken = Token.INT_LIT;
-                    value += c;
-                    continue;
-                }
+        while (state != TokenizerState.done) {
+            char c = scanner.current();
 
-                if (currentToken == Token.INT_LIT || currentToken == Token.IDENT) {
-                    break;
-                }
+            if (c == Scanner.EOF) {
+                currentToken = Token.EOF;
+                state = TokenizerState.done;
+                return;
+            }
 
-                if (c == ' ') {
+            if (Character.isWhitespace(c)) {
+                if (state != TokenizerState.idle) {
+                    state = TokenizerState.done;
+                } else {
                     scanner.moveNext();
-                    c = scanner.current();
                 }
+                continue;
+            }
 
-                if (c == '+') {
-                    currentToken = Token.ADD_OP;
+            if (Character.isAlphabetic(c)) {
+                if (state != TokenizerState.idle && state != TokenizerState.readingIdentity) {
+                    throw new TokenizerException("Unexpected character: " + c);
                 }
+                state = TokenizerState.readingIdentity;
+                currentToken = Token.IDENT;
+                value += c;
+                scanner.moveNext();
 
-                if (c == '-') {
-                    currentToken = Token.SUB_OP;
+                continue;
+            }
+
+            if (Character.isDigit(c)) {
+                if (state != TokenizerState.idle && state != TokenizerState.readingInt) {
+                    throw new TokenizerException("Unexpected character: " + c);
                 }
-            } while (currentToken != Token.NULL);
-            this.currentLexeme = new Lexeme(value, currentToken);
+                state = TokenizerState.readingInt;
+                currentToken = Token.INT_LIT;
+                value += c;
+                scanner.moveNext();
+                continue;
+            }
+
+            if (state != TokenizerState.idle) {
+                state = TokenizerState.done;
+                continue;
+            }
+
+            currentToken = getOpToken(c);
+
+            if (currentToken == null) {
+                throw new TokenizerException("Unexpected character: " + c);
+            }
+            scanner.moveNext();
+
+            state = TokenizerState.done;
         }
+        state = TokenizerState.idle;
+        this.currentLexeme = new Lexeme(value, currentToken);
     }
 
     @Override
     public void close() throws IOException {
-
+        scanner.close();
     }
 
-    private boolean isIdentity(char c) {
-        return Character.isAlphabetic(c);
+    private Token getOpToken(char c) {
+        switch (c) {
+        case '+':
+            return Token.ADD_OP;
+        case '-':
+            return Token.SUB_OP;
+        case '*':
+            return Token.MULT_OP;
+        case '/':
+            return Token.DIV_OP;
+        case '=':
+            return Token.ASSIGN_OP;
+        case '(':
+            return Token.LEFT_PAREN;
+        case ')':
+            return Token.RIGHT_PAREN;
+        case ';':
+            return Token.SEMICOLON;
+        default:
+            return null;
+        }
     }
 }
