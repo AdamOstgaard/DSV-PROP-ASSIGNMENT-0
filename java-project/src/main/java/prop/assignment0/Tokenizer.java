@@ -82,6 +82,9 @@ public class Tokenizer implements ITokenizer {
             if (currentToken == null) {
                 throw new TokenizerException("Unexpected character: " + c);
             }
+
+            value += c;
+
             scanner.moveNext();
 
             state = TokenizerState.done;
