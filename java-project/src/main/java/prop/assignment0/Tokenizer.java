@@ -55,6 +55,7 @@ public class Tokenizer implements ITokenizer {
                 }
                 state = TokenizerState.readingIdentity;
                 currentToken = Token.IDENT;
+
                 value += c;
                 scanner.moveNext();
 
@@ -90,7 +91,13 @@ public class Tokenizer implements ITokenizer {
             state = TokenizerState.done;
         }
         state = TokenizerState.idle;
-        this.currentLexeme = new Lexeme(value, currentToken);
+
+        try {
+            double valNum = Double.parseDouble(value);
+            this.currentLexeme = new Lexeme(valNum, currentToken);
+        } catch (NumberFormatException e) {
+            this.currentLexeme = new Lexeme(value, currentToken);
+        }
     }
 
     @Override
