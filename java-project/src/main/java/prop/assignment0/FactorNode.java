@@ -18,7 +18,10 @@ public class FactorNode implements INode {
 
     @Override
     public Object evaluate(Object[] args) throws Exception {
-        return null;
+        if (expression != null) {
+            return expression.evaluate(null);
+        }
+        return (double) value.value();
     }
 
     @Override

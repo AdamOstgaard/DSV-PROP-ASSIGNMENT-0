@@ -17,7 +17,17 @@ public class ExpressionNode implements INode {
 
     @Override
     public Object evaluate(Object[] args) throws Exception {
-        return null;
+        if (operator != null) {
+            if (operator.token() == Token.ADD_OP) {
+                return (double) term.evaluate(null) + (double) expression.evaluate(null);
+            }
+
+            if (operator.token() == Token.SUB_OP) {
+                return (double) term.evaluate(null) - (double) expression.evaluate(null);
+            }
+        }
+
+        return term.evaluate(null);
     }
 
     @Override

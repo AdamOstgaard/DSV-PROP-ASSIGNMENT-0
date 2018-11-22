@@ -15,7 +15,7 @@ public class AssignmentNode implements INode {
 
     @Override
     public Object evaluate(Object[] args) throws Exception {
-        return null;
+        return id.value().toString() + operation.value().toString() + expression.evaluate(null);
     }
 
     @Override
