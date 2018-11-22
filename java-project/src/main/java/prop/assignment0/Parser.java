@@ -25,8 +25,6 @@ public class Parser implements IParser {
     }
 
     private FactorNode parseFactorNode() throws ParserException, IOException, TokenizerException {
-        System.out.println("Begin parse factor");
-
         Lexeme current = tokenizer.current();
         FactorNode node = null;
 
@@ -53,8 +51,6 @@ public class Parser implements IParser {
     }
 
     private ExpressionNode parseExpressionNode() throws ParserException, IOException, TokenizerException {
-        System.out.println("Begin parse expression");
-
         TermNode term = parseTermNode();
         Lexeme current = tokenizer.current();
 
